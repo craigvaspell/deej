@@ -6,10 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"os"
-
-	"go.uber.org/zap"
+	"strings"
 
 	"github.com/omriharel/deej/pkg/deej/util"
+
+	"go.uber.org/zap"
 )
 
 const (
@@ -146,6 +147,11 @@ func (d *Deej) run() {
 		if err := d.serial.Start(); err != nil {
 			d.logger.Warnw("Failed to start first-time serial connection", "error", err)
 
+			portName := d.config.ConnectionInfo.COMPort
+			if portName == "" {
+				portName = "None (will auto-detect)"
+			}
+
 			// If the port is busy, that's because something else is connected - notify and quit
 			if errors.Is(err, os.ErrPermission) {
 				d.logger.Warnw("Serial port seems busy, notifying user and closing",
@@ -163,6 +169,14 @@ func (d *Deej) run() {
 
 				d.notifier.Notify(fmt.Sprintf("Can't connect to %s!", d.config.ConnectionInfo.COMPort),
 					"This serial port doesn't exist, check your configuration and make sure it's set correctly.")
+
+				d.signalStop()
+			} else if strings.Contains(err.Error(), "auto-detect") {
+				d.logger.Warnw("Auto-detection failed to find Deej device")
+
+				d.notifier.Notify(
+					"Can't find Deej device!",
+					"Make sure an appropriate device with the Deej sketch uploaded is connected. Check log for details.")
 
 				d.signalStop()
 			}
