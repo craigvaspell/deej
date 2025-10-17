@@ -94,8 +94,10 @@ slider_mapping:
 # set this to true if you want the controls inverted (i.e. top is 0%, bottom is 100%)
 invert_sliders: false
 
-# settings for connecting to the arduino board
-com_port: COM4
+# settings for connecting to the arduino board 
+# leaving com_port as an empty string will allow for auto-detect 
+# only set an explicit value if you want bind specifically to that serial port for some reason 
+com_port: "" 
 baud_rate: 9600
 
 # adjust the amount of signal noise reduction depending on your hardware quality
